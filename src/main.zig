@@ -19,11 +19,13 @@ const Wrapper = struct {
         // std.debug.print("context: {s}\n", .{context.key});
         return 1;
     }
-};
 
-fn some(a: ?u8) void {
-    std.debug.print("some {d}\n", .{a});
-}
+    pub fn iter(a: *User, ctx: ?*void) bool {
+        _ = ctx;
+        std.debug.print("iter: {s}\n", .{a.name});
+        return true;
+    }
+};
 
 pub fn main() !void {
     // var context = Context{ .key = "key" };
@@ -40,4 +42,6 @@ pub fn main() !void {
     const count = btree.count();
 
     std.debug.print("count: {d}\n", .{count});
+
+    _ = btree.ascend(null, void, Wrapper.iter, null);
 }
