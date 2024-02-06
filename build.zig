@@ -4,6 +4,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    _ = b.addModule("btree_c_zig", .{ .root_source_file = .{ .path = "src/btree.zig" } });
+
     const btree_c_lib = b.addStaticLibrary(.{
         .target = target,
         .name = "btree.c",
