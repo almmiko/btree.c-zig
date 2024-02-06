@@ -177,3 +177,136 @@ pub fn Iterator(comptime T: type) type {
         }
     };
 }
+
+test "btree init" {
+    const cString = @cImport({
+        @cInclude("string.h");
+    });
+
+    const User = struct {
+        name: []const u8,
+    };
+
+    const cb = struct {
+        pub fn compare(a: *User, b: *User, ctx: ?*void) c_int {
+            _ = ctx;
+            return cString.strncmp(a.name.ptr, b.name.ptr, a.name.len);
+        }
+    };
+
+    var btree = Btree(User, void).init(0, cb.compare, null);
+    defer btree.deinit();
+
+    try std.testing.expect(btree.handle != undefined);
+}
+
+test "btree set" {
+    const cString = @cImport({
+        @cInclude("string.h");
+    });
+
+    const User = struct {
+        name: []const u8,
+    };
+
+    const Context = struct {
+        key: []const u8,
+    };
+
+    const cb = struct {
+        pub fn compare(a: *User, b: *User, ctx: ?*Context) c_int {
+            ctx.?.key = "updated";
+
+            return cString.strncmp(a.name.ptr, b.name.ptr, a.name.len);
+        }
+    };
+
+    var context = Context{ .key = "key" };
+
+    var btree = Btree(User, Context).init(0, cb.compare, &context);
+    defer btree.deinit();
+
+    const user1 = User{ .name = "user1" };
+    const user2 = User{ .name = "user2" };
+    const user3 = User{ .name = "user3" };
+
+    _ = btree.set(&user1);
+    _ = btree.set(&user2);
+    _ = btree.set(&user3);
+
+    try std.testing.expectEqualStrings("updated", context.key);
+    try std.testing.expectEqual(btree.count(), 3);
+}
+
+test "btree get" {
+    const cString = @cImport({
+        @cInclude("string.h");
+    });
+
+    const User = struct {
+        name: []const u8,
+    };
+
+    const cb = struct {
+        pub fn compare(a: *User, b: *User, ctx: ?*void) c_int {
+            _ = ctx;
+
+            return cString.strncmp(a.name.ptr, b.name.ptr, a.name.len);
+        }
+    };
+
+    var btree = Btree(User, void).init(0, cb.compare, null);
+    defer btree.deinit();
+
+    const user1 = User{ .name = "user1" };
+    const user2 = User{ .name = "user2" };
+
+    _ = btree.set(&user1);
+    _ = btree.set(&user2);
+
+    const user = btree.get(&user1).?.*;
+
+    try std.testing.expectEqual(user1, user);
+    try std.testing.expectEqual(btree.count(), 2);
+}
+
+test "btree ascend" {
+    const cString = @cImport({
+        @cInclude("string.h");
+    });
+
+    const User = struct {
+        id: u8,
+        name: []const u8,
+    };
+
+    const cb = struct {
+        pub fn compare(a: *User, b: *User, ctx: ?*void) c_int {
+            _ = ctx;
+            return cString.strncmp(a.name.ptr, b.name.ptr, a.name.len);
+        }
+
+        pub fn iter(a: *User, ctx: ?*std.ArrayList(u8)) bool {
+            ctx.?.append(a.id) catch unreachable;
+            return true;
+        }
+    };
+
+    var btree = Btree(User, void).init(0, cb.compare, null);
+    defer btree.deinit();
+
+    const user1 = User{ .id = 1, .name = "user1" };
+    const user2 = User{ .id = 2, .name = "user2" };
+    const user3 = User{ .id = 3, .name = "user3" };
+
+    _ = btree.set(&user1);
+    _ = btree.set(&user2);
+    _ = btree.set(&user3);
+
+    var ctx = std.ArrayList(u8).init(std.testing.allocator);
+    defer ctx.deinit();
+
+    _ = btree.ascend(std.ArrayList(u8), &ctx, null, cb.iter);
+
+    try std.testing.expectEqualSlices(u8, &[3]u8{ 1, 2, 3 }, ctx.items[0..]);
+}
