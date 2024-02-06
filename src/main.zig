@@ -1,6 +1,7 @@
 const std = @import("std");
 
 const Btree = @import("btree.zig").Btree;
+const Iterator = @import("btree.zig").Iterator;
 
 const c = @cImport({
     @cInclude("string.h");
@@ -39,6 +40,9 @@ pub fn main() !void {
 
     const user1 = User{ .name = "user1" };
     const user2 = User{ .name = "user2" };
+    const user4 = User{ .name = "user4" };
+
+    _ = btree.load(&user4);
 
     _ = btree.set(&user1);
     _ = btree.set(&user2);
@@ -54,4 +58,23 @@ pub fn main() !void {
     if (user) |usr| {
         std.debug.print("get method: user: {s}\n", .{usr.name});
     }
+
+    var iter = Iterator(User).init(Btree(User, void), &btree);
+
+    const found = iter.seek(&user2);
+    std.debug.print("iter seek: {any}\n", .{found});
+
+    const user3 = iter.item();
+    std.debug.print("iter item: {s}\n", .{user3.?.name});
+
+    var newTree = btree.clone().?;
+
+    const newTreeCount = newTree.count();
+    std.debug.print("new tree count: {d}\n", .{newTreeCount});
+
+    const minValue = btree.min().?;
+    std.debug.print("minValue: {s}\n", .{minValue.name});
+
+    const maxValue = btree.max().?;
+    std.debug.print("maxValue: {s}\n", .{maxValue.name});
 }
