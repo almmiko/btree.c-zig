@@ -4,21 +4,14 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    _ = b.addModule("btree_c_zig", .{ .root_source_file = .{ .path = "src/btree.zig" } });
-
-    const btree_c_lib = b.addStaticLibrary(.{
+    const dep_btree_c = b.dependency("btree_c", .{
         .target = target,
-        .name = "btree.c",
         .optimize = optimize,
     });
 
-    const root = comptime std.fs.path.dirname(@src().file) orelse ".";
-
-    btree_c_lib.addCSourceFiles(.{ .files = &.{root ++ "/vendor/btree.c/btree.c"} });
-    btree_c_lib.addIncludePath(.{ .path = root ++ "/vendor/btree.c" });
-    btree_c_lib.linkLibC();
-
-    b.installArtifact(btree_c_lib);
+    _ = b.addModule("btree_c_zig", .{
+        .root_source_file = .{ .path = "src/btree.zig" },
+    });
 
     const btree_zig = b.addStaticLibrary(.{
         .name = "btree-zig",
@@ -27,8 +20,19 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    btree_zig.linkLibrary(btree_c_lib);
-    btree_zig.addIncludePath(.{ .path = root ++ "/vendor/btree.c" });
+    btree_zig.linkLibC();
+
+    btree_zig.addCSourceFiles(.{
+        .dependency = dep_btree_c,
+        .files = &.{"btree.c"},
+    });
+
+    btree_zig.installHeadersDirectoryOptions(.{
+        .source_dir = dep_btree_c.path(""),
+        .install_dir = .header,
+        .install_subdir = "",
+        .include_extensions = &.{"btree.h"},
+    });
 
     b.installArtifact(btree_zig);
 
@@ -38,8 +42,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    btree_zig_tests.linkLibrary(btree_c_lib);
-    btree_zig_tests.addIncludePath(.{ .path = root ++ "/vendor/btree.c" });
+    btree_zig_tests.linkLibrary(btree_zig);
 
     const run_btree_zig_unit_tests = b.addRunArtifact(btree_zig_tests);
 

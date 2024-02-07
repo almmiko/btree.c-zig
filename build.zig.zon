@@ -1,7 +1,12 @@
 .{
     .name = "btree-zig",
     .version = "0.0.1",
-    .dependencies = .{},
+    .dependencies = .{
+    	.btree_c = .{
+	    .url = "https://github.com/tidwall/btree.c/archive/v0.6.1.tar.gz",
+	    .hash = "122032a19f309225db04415bcecfa87c95d3110b1d90d1223a613f3302a2a46e7f6f"
+	}
+    },
     .paths = .{
         "",
     },
