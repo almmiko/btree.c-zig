@@ -9,10 +9,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    _ = b.addModule("btree_c_zig", .{
-        .root_source_file = .{ .path = "src/btree.zig" },
-    });
-
     const btree_zig = b.addStaticLibrary(.{
         .name = "btree-zig",
         .root_source_file = .{ .path = "src/btree.zig" },
@@ -33,6 +29,13 @@ pub fn build(b: *std.Build) void {
         .install_subdir = "",
         .include_extensions = &.{"btree.h"},
     });
+
+    const module = b.addModule("btree_c_zig", .{
+        .root_source_file = .{ .path = "src/btree.zig" },
+    });
+
+    // Include header files from btree.c lib
+    module.addIncludePath(dep_btree_c.path(""));
 
     b.installArtifact(btree_zig);
 

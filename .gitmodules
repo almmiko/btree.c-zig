@@ -1,3 +1,0 @@
-[submodule "vendor/btree.c"]
-	path = vendor/btree.c
-	url = https://github.com/tidwall/btree.c
