@@ -19,14 +19,11 @@ pub fn build(b: *std.Build) void {
     btree_zig.linkLibC();
 
     btree_zig.addCSourceFiles(.{
-        .dependency = dep_btree_c,
+        .root = dep_btree_c.path(""),
         .files = &.{"btree.c"},
     });
 
-    btree_zig.installHeadersDirectoryOptions(.{
-        .source_dir = dep_btree_c.path(""),
-        .install_dir = .header,
-        .install_subdir = "",
+    btree_zig.installHeadersDirectory(dep_btree_c.path(""), "", .{
         .include_extensions = &.{"btree.h"},
     });
 
