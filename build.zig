@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) void {
 
     const btree_zig = b.addStaticLibrary(.{
         .name = "btree-zig",
-        .root_source_file = .{ .path = "src/btree.zig" },
+        .root_source_file = b.path("src/btree.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -28,7 +28,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const module = b.addModule("btree_c_zig", .{
-        .root_source_file = .{ .path = "src/btree.zig" },
+        .root_source_file = b.path("src/btree.zig"),
     });
 
     // Include header files from btree.c lib
@@ -37,7 +37,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(btree_zig);
 
     const btree_zig_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/btree.zig" },
+        .root_source_file = b.path("src/btree.zig"),
         .target = target,
         .optimize = optimize,
     });
