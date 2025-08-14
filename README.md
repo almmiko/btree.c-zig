@@ -15,10 +15,10 @@ zig fetch --save https://github.com/almmiko/btree.c-zig/archive/<git-ref>.tar.gz
 Or manually
 ```zig
 .{
-    .name = "project-zig",
+    .name = .project_zig,
     .version = "0.0.0",
     .dependencies = .{
-        .@"btree-zig" = .{
+        .btree_zig = .{
             .url = "https://github.com/almmiko/btree.c-zig/archive/<git-ref>.tar.gz",
             .hash = "1220450bb9feb21c29018e21a8af457859eb2a4607a6017748bb618907b4cf18c67b",
         },
@@ -32,15 +32,15 @@ Or manually
 Add dependency in your `build.zig`
 
 ```zig
-const btree_zig = b.dependency("btree-zig", .{
+const btree_zig = b.dependency("btree_zig", .{
     .target = target,
     .optimize = optimize,
 });
 
 const btree_zig_module = btree_zig.module("btree_c_zig");
 
-exe.root_module.addImport("btree-zig", btree_zig_module);
-exe.linkLibrary(btree_zig.artifact("btree-zig"));
+exe.root_module.addImport("btree_zig", btree_zig_module);
+exe.linkLibrary(btree_zig.artifact("btree_zig"));
 ```
 
 ## Usage

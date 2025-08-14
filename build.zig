@@ -9,11 +9,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const btree_zig = b.addStaticLibrary(.{
-        .name = "btree-zig",
-        .root_source_file = b.path("src/btree.zig"),
-        .target = target,
-        .optimize = optimize,
+    const btree_zig = b.addLibrary(.{
+        .name = "btree_zig",
+        .linkage = .static,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/btree.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     btree_zig.linkLibC();
@@ -37,9 +40,11 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(btree_zig);
 
     const btree_zig_tests = b.addTest(.{
-        .root_source_file = b.path("src/btree.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/btree.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
 
     btree_zig_tests.linkLibrary(btree_zig);

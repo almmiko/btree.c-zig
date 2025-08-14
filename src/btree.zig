@@ -8,7 +8,7 @@ pub fn Btree(comptime T: type, comptime Context: type) type {
     return struct {
         const Self = @This();
 
-        handle: *c.struct_btree = undefined,
+        handle: *c.struct_btree,
 
         pub fn init(
             max_items: usize,
@@ -212,8 +212,6 @@ test "btree init" {
 
     var btree = Btree(User, void).init(0, cb.compare, null);
     defer btree.deinit();
-
-    try std.testing.expect(btree.handle != undefined);
 }
 
 test "btree set" {
